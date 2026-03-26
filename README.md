@@ -1,61 +1,49 @@
-# 🧳 Luggage Brand Competitive Intelligence Dashboard
+# Luggage Sentiments: Amazon Review Analysis Dashboard
 
-This project is a competitive intelligence tool designed to monitor and analyze sentiment for major luggage brands on Amazon India. By scraping customer reviews and running them through a sentiment analysis pipeline, we can gain insights into what customers love (and hate) about specific brands.
+A comprehensive dashboard for analyzing customer sentiment on luggage brands sold on Amazon India. This tool scrapes review data, performs NLP sentiment analysis, and presents actionable insights via an interactive Streamlit UI.
 
----
+## Methodology
 
-## 🔍 Project Vision
+- **Sentiment Scoring**: Uses **VADER** (Valence Aware Dictionary and sEntiment Reasoner) to assign a quantitative sentiment score (-1 to +1) to every review. VADER is particularly effective for social media and review text as it handles emojis, intensifiers, and nuanced phrasing without requiring heavy machine learning models.
+- **Theme Extraction**: Analyzes both positive and negative keywords (e.g., *wheels, zipper, handle, lock, material, size, weight, quality, price, durability*) to automatically surface the top pros and cons for each brand based on keyword frequency within positive and negative review subsets.
 
-The goal is to provide a real-time (or near real-time) dashboard that helps business analysts compare brands side-by-side. 
+## Dataset Description
 
-- **Scraping**: Using Playwright to navigate Amazon's search results and extract product details and customer reviews.
-- **Sentiment**: Using VADER (`vaderSentiment`) which is specifically tuned for social media and product-like text (handling emojis, punctuation, and intensifiers).
-- **Visualization**: A clean Streamlit interface with Plotly charts for competitive benchmarking.
+The analysis covers 6 major luggage brands:
+* Safari
+* Skybags
+* American Tourister
+* VIP
+* Aristocrat
+* Nasher Miles
 
----
+**Core Columns Context:**
+- `brand`: The brand of the luggage.
+- `product_title`: Full product listing name.
+- `price` / `mrp` / `discount_pct`: Pricing metrics for value analysis.
+- `rating` / `review_count`: Overall product consensus metrics.
+- `reviewer_name` / `reviewer_rating`: Individual user consensus metrics.
+- `review_text`: The textual review analyzed by VADER.
+- `sentiment_score`: The VADER compound sentiment score mapping text to a -1 to +1 polarity.
 
-## 🛠️ Project Structure
+## Known Limitations
 
-```text
-munshot/
-├── link.txt              # Our source list: Brand Name | Search URL
-├── scraper.py            # The data fetcher (Playwright) -> saves to raw_data.csv
-├── analyze.py            # The "brain" (VADER Sentiment) -> saves to processed_data.csv
-├── app.py                # The interactive dashboard (Streamlit + Plotly)
-├── requirements.txt      # Python dependencies
-├── README.md             # This guide
-└── data/                 # Local data storage
-    ├── raw_data.csv      # Unfiltered, scraped data
-    └── processed_data.csv # Enriched data with sentiment scores
-```
+- **Scraping Constraints**: Reviews are scraped exclusively from the primary product page. Pagination into the dedicated "All Reviews" section is restricted due to Amazon's aggressive anti-bot protections and CAPTCHA walls.
 
----
+## Getting Started
 
-## 🚀 Getting Started
+### Installation
 
-### 1. Environment Setup
-First, make sure you have the dependencies installed. I've pinned these to stable versions that I know play well together.
-
+Install the required Python dependencies listed in the requirements file:
 ```bash
 pip install -r requirements.txt
 ```
 
-Since we're using Playwright, you'll also need to install the browser binaries:
+*(Note: Ensure you have run Phase 1 (scraper) and Phase 3 (`analyze.py`) before launching the dashboard so that the `data/processed_data.csv` is populated).*
+
+### Running the Dashboard
+
+To launch the interactive Streamlit dashboard:
 ```bash
-playwright install chromium
+streamlit run app.py
 ```
-
-### 2. Running the Pipeline
-The project follows a linear data pipeline:
-
-1.  **Scrape**: `python scraper.py` — This marks the start. It reads `link.txt` and goes out to fetch the data.
-2.  **Analyze**: `python analyze.py` — Once we have the raw data, this script cleans it and runs the sentiment scoring.
-3.  **Visualize**: `streamlit run app.py` — Finally, launch the dashboard to see the results.
-
----
-
-## 📈 Developer Roadmap
-- [x] **Scaffold**: Folder structure, dependencies, and empty data stores.
-- [x] **Scraper**: Async Playwright — products + reviews, pricing, user-agent rotation.
-- [ ] **Analysis**: Fine-tune VADER thresholds and add data cleaning steps.
-- [ ] **Dashboard**: Build out the multi-brand comparison views.

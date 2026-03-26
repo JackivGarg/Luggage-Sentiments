@@ -1,7 +1,7 @@
 brand,avg_price,avg_mrp,avg_discount_pct,avg_rating,avg_sentiment,total_reviews,top_5_positive_themes,top_5_negative_themes
-American Tourister,4602.48,7109.25,34.32,4.12,0.429,75,"quality, handle, material, price, wheels","quality, handle, material, zipper, wheels"
-Aristocrat,2180.49,4047.53,45.36,3.88,0.31,72,"quality, handle, zipper, material, price","quality, material, handle, price, wheels"
-Nasher Miles,4002.17,4797.64,16.8,4.15,0.151,75,"quality, material, handle, price, zipper","quality, handle, material, wheels, price"
-Safari,2335.33,3784.84,38.06,3.76,0.239,63,"quality, material, handle, price, size","quality, wheels, handle, price, zipper"
-Skybags,2827.87,4272.56,34.57,4.05,0.242,61,"quality, material, handle, price, zipper","wheels, quality, zipper, handle, material"
-VIP,2575.64,3957.7,33.21,3.56,0.123,73,"quality, material, price, zipper, handle","material, quality, handle, weight, wheels"
+American Tourister,4602.48,7109.25,34.32,4.12,0.429,75,"High quality build, Sturdy, smooth handle, Smooth, durable wheels","Poor material quality, Zipper failures, Handle malfunction"
+Aristocrat,2180.49,4047.53,45.36,3.88,0.31,72,"High Build Quality, Smooth Wheels, Sturdy Smooth Handle","Poor material quality, Frequent component failure, Poor value for money"
+Nasher Miles,4002.17,4797.64,16.8,4.15,0.151,75,"Durable build quality, Smooth, reliable zippers, Great value for money","Poor durability/material, Handle failures, Zipper issues"
+Safari,2335.33,3784.84,38.06,3.76,0.239,63,"Quality, Value for money, Durability","Poor durability, Handle defects, Wheel defects"
+Skybags,2827.87,4272.56,34.57,4.05,0.242,61,"Durable material, Lightweight, Smooth wheels","Wheel failure, Poor durability, Handle and zipper issues"
+VIP,2575.64,3957.7,33.21,3.56,0.123,73,"Quality construction, Great durability, Good value","Poor material durability, Defective handle, Zipper failures"

@@ -1,6 +1,16 @@
 import pandas as pd
 import os
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from google import genai
+from dotenv import load_dotenv
+
+# Load API Key from .env
+load_dotenv()
+try:
+    gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+except Exception as e:
+    print("Warning: Could not configure Gemini API Key.")
+    gemini_client = None
 
 KEYWORDS = ['wheels', 'zipper', 'handle', 'lock', 'material', 'size', 'weight', 'quality', 'price', 'durability']
 
@@ -19,39 +29,52 @@ def add_sentiment_scores(df):
     df['sentiment_score'] = df['review_text'].apply(lambda x: analyzer.polarity_scores(x)['compound'])
     return df
 
+def get_gemini_themes(reviews, sentiment_type):
+    """Hits Gemini API to extract top 3 themes from a list of reviews."""
+    if not reviews:
+        return "None"
+    
+    reviews_str = " | ".join(reviews[:30]) # Limit to 30 to save context/time
+    prompt = (
+        f"You are an expert product analyst. Review these {sentiment_type} luggage reviews.\n"
+        f"Extract the top 3 most common distinct {sentiment_type} themes/complaints/praises.\n"
+        "Be extremely concise. Return ONLY a comma-separated list of exactly 3 short phrases. (e.g. 'Sturdy handle, Good wheels, Nice color').\n"
+        f"Reviews:\n{reviews_str}"
+    )
+
+    try:
+        if not gemini_client:
+            return "API Error: No Client"
+            
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+        # Clean up any newlines or extra spaces
+        return response.text.strip().replace('\n', '')
+    except Exception as e:
+        print(f"Gemini API Error: {e}")
+        return "Error extracting themes"
+
 def extract_themes(df):
     """
-    Extracts top 5 positive and negative themes per brand by checking which
-    keywords appear in positive vs negative reviews.
-    Returns two dictionaries mapping brand -> comma separated top 5 themes.
+    Extracts top 3 positive and negative themes per brand using Gemini 1.5 Flash.
+    Returns two dictionaries mapping brand -> comma separated top 3 themes.
     """
     pos_themes_dict = {}
     neg_themes_dict = {}
 
     brands = df['brand'].unique()
     for brand in brands:
+        print(f"  -> Asking Gemini for {brand} themes...")
         brand_df = df[df['brand'] == brand]
         
         # Consider reviews with >0.05 score as positive, <-0.05 as negative
-        pos_reviews = brand_df[brand_df['sentiment_score'] > 0.05]['review_text'].str.lower()
-        neg_reviews = brand_df[brand_df['sentiment_score'] < -0.05]['review_text'].str.lower()
+        pos_reviews = brand_df[brand_df['sentiment_score'] > 0.05]['review_text'].tolist()
+        neg_reviews = brand_df[brand_df['sentiment_score'] < -0.05]['review_text'].tolist()
 
-        # Count occurrences of each keyword
-        pos_counts = {kw: pos_reviews.str.contains(kw).sum() for kw in KEYWORDS}
-        neg_counts = {kw: neg_reviews.str.contains(kw).sum() for kw in KEYWORDS}
-
-        # Select top 5 where count > 0, to avoid showing irrelevant categories
-        # Wait, requirements just said 'top 5', let's sort purely by count Descending
-        top_pos = sorted(pos_counts.items(), key=lambda item: item[1], reverse=True)
-        top_neg = sorted(neg_counts.items(), key=lambda item: item[1], reverse=True)
-        
-        # Keep merely the keyword names for the top 5
-        top_pos_kws = [k for k, v in top_pos if v > 0][:5]
-        top_neg_kws = [k for k, v in top_neg if v > 0][:5]
-        
-        # If no keywords matched, just put 'None' or empty string
-        pos_themes_dict[brand] = ", ".join(top_pos_kws) if top_pos_kws else "None"
-        neg_themes_dict[brand] = ", ".join(top_neg_kws) if top_neg_kws else "None"
+        pos_themes_dict[brand] = get_gemini_themes(pos_reviews, "positive") if pos_reviews else "None"
+        neg_themes_dict[brand] = get_gemini_themes(neg_reviews, "negative") if neg_reviews else "None"
 
     return pos_themes_dict, neg_themes_dict
 
@@ -94,7 +117,7 @@ def main():
     print("Running VADER Sentiment Analysis...")
     df = add_sentiment_scores(df)
 
-    print("Extracting keyword themes...")
+    print("Extracting keyword themes using Gemini...")
     pos_themes, neg_themes = extract_themes(df)
 
     print("Aggregating brand summary...")
