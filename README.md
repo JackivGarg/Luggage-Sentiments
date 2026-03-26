@@ -5,7 +5,8 @@ A comprehensive dashboard for analyzing customer sentiment on luggage brands sol
 ## Methodology
 
 - **Sentiment Scoring**: Uses **VADER** (Valence Aware Dictionary and sEntiment Reasoner) to assign a quantitative sentiment score (-1 to +1) to every review. VADER is particularly effective for social media and review text as it handles emojis, intensifiers, and nuanced phrasing without requiring heavy machine learning models.
-- **Theme Extraction**: Analyzes both positive and negative keywords (e.g., *wheels, zipper, handle, lock, material, size, weight, quality, price, durability*) to automatically surface the top pros and cons for each brand based on keyword frequency within positive and negative review subsets.
+- **Theme Extraction**: Utilizes **HuggingFace** and the `Llama-3.3-70B-Instruct` model to intelligently read through reviews and extract specific, non-contradictory top Pros & Cons for each luggage brand.
+- **AI Matchmaker**: Features an intelligent Chatbot (powered by Llama 70B) in the dashboard that takes user preferences (e.g., "I need a cheap cabin bag with good wheels") and recommends specific luggage models, factoring in real-world prices and sentiment data.
 
 ## Dataset Description
 

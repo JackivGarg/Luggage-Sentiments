@@ -1,7 +1,7 @@
 brand,avg_price,avg_mrp,avg_discount_pct,avg_rating,avg_sentiment,total_reviews,top_5_positive_themes,top_5_negative_themes
-American Tourister,4602.48,7109.25,34.32,4.12,0.429,75,"High quality build, Sturdy, smooth handle, Smooth, durable wheels","Poor material quality, Zipper failures, Handle malfunction"
-Aristocrat,2180.49,4047.53,45.36,3.88,0.31,72,"High Build Quality, Smooth Wheels, Sturdy Smooth Handle","Poor material quality, Frequent component failure, Poor value for money"
-Nasher Miles,4002.17,4797.64,16.8,4.15,0.151,75,"Durable build quality, Smooth, reliable zippers, Great value for money","Poor durability/material, Handle failures, Zipper issues"
-Safari,2335.33,3784.84,38.06,3.76,0.239,63,"Quality, Value for money, Durability","Poor durability, Handle defects, Wheel defects"
-Skybags,2827.87,4272.56,34.57,4.05,0.242,61,"Durable material, Lightweight, Smooth wheels","Wheel failure, Poor durability, Handle and zipper issues"
-VIP,2575.64,3957.7,33.21,3.56,0.123,73,"Quality construction, Great durability, Good value","Poor material durability, Defective handle, Zipper failures"
+American Tourister,4602.48,7109.25,34.32,4.12,0.429,75,"Smooth wheels, Secure lock, Light weight","Zipper breaks, Handle sticks, Material scratches"
+Aristocrat,2180.49,4047.53,45.36,3.88,0.31,72,"Smooth spinner wheels, Secure lock, Light weight","Zipper breaks, Material scratches, Handle loosens"
+Nasher Miles,4002.17,4797.64,16.8,4.15,0.151,75,"Smooth spinner wheels, Sturdy handle, Scratch proof material","Zipper breaks quickly, Handle snaps easily, Lock fails"
+Safari,2335.33,3784.84,38.06,3.76,0.239,63,"Smooth wheels, Sturdy handle, Durable material","Zipper breaks, Handle fails, Wheels wobble"
+Skybags,2827.87,4272.56,34.57,4.05,0.242,61,"Smooth spinner wheels, Secure lock, Premium material","Zipper breaks, Handle jams, Wheels wobble"
+VIP,2575.64,3957.7,33.21,3.56,0.123,73,"Smooth spinner wheels, Ergonomic handle, Light weight","Zipper breaks, Handle feels loose, Material scratches"

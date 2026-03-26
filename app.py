@@ -2,17 +2,17 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
-from google import genai
+from huggingface_hub import InferenceClient
 import os
 from dotenv import load_dotenv
 
-# Initialize Gemini
+# Initialize HuggingFace Client
 load_dotenv()
 try:
-    gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+    hf_client = InferenceClient(api_key=os.environ.get("HF_TOKEN"))
+    HF_MODEL = "meta-llama/Llama-3.3-70B-Instruct"
 except Exception as e:
-    gemini_client = None
+    hf_client = None
     pass
 
 # Page Configuration MUST be the first Streamlit command
@@ -51,43 +51,131 @@ def main():
         render_matchmaker(df_processed, df_summary)
 
 def render_overview(df_processed, df_summary):
-    st.title("📊 Overview")
-    
-    # 4 KPI cards
-    col1, col2, col3, col4 = st.columns(4)
+    # ── Hero Header ──────────────────────────────────────────────────────────
     total_brands = df_summary['brand'].nunique()
     total_products = df_processed['product_title'].nunique()
     total_reviews = len(df_processed)
     overall_sentiment = df_processed['sentiment_score'].mean()
-    
-    col1.metric("Total Brands", total_brands)
-    col2.metric("Total Products", total_products)
-    col3.metric("Total Reviews", total_reviews)
-    col4.metric("Overall Avg Sentiment", f"{overall_sentiment:.3f}")
-    
+
+    st.markdown(f"""
+    <style>
+    .hero {{
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        border-radius: 16px;
+        padding: 40px 48px;
+        margin-bottom: 28px;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }}
+    .hero h1 {{
+        font-size: 2.6rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }}
+    .hero p {{
+        color: rgba(255,255,255,0.65);
+        font-size: 1.05rem;
+        margin: 0 0 20px 0;
+    }}
+    .hero-badge {{
+        display: inline-block;
+        background: rgba(96,165,250,0.15);
+        border: 1px solid rgba(96,165,250,0.4);
+        color: #93c5fd;
+        border-radius: 999px;
+        padding: 4px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-right: 8px;
+    }}
+    .kpi-row {{
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }}
+    .kpi-card {{
+        flex: 1;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 20px 24px;
+        text-align: center;
+    }}
+    .kpi-card .kpi-icon {{ font-size: 1.6rem; }}
+    .kpi-card .kpi-value {{
+        font-size: 2rem;
+        font-weight: 800;
+        color: #f1f5f9;
+        line-height: 1.1;
+        margin: 4px 0;
+    }}
+    .kpi-card .kpi-label {{
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }}
+    </style>
+
+    <div class="hero">
+        <h1>🧳 Luggage Sentiment Intelligence</h1>
+        <p>Real-time analysis of Amazon India customer reviews — surfacing what buyers truly feel about top luggage brands.</p>
+        <span class="hero-badge">🏷️ {total_brands} Brands</span>
+        <span class="hero-badge">📦 {total_products} Products</span>
+        <span class="hero-badge">💬 {total_reviews} Reviews Analysed</span>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-icon">🏷️</div>
+            <div class="kpi-value">{total_brands}</div>
+            <div class="kpi-label">Brands Tracked</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-value">{total_products}</div>
+            <div class="kpi-label">Unique Products</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">💬</div>
+            <div class="kpi-value">{total_reviews}</div>
+            <div class="kpi-label">Reviews Processed</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">{'🟢' if overall_sentiment > 0 else '🔴'}</div>
+            <div class="kpi-value">{overall_sentiment:.3f}</div>
+            <div class="kpi-label">Overall Avg Sentiment</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.divider()
-    
+
     # Sort summary by sentiment
     df_sentiment = df_summary.sort_values('avg_sentiment', ascending=False)
-    
+
     # Colors: Green for > 0, Red for < 0
     colors = ['green' if x > 0 else 'red' for x in df_sentiment['avg_sentiment']]
-    
+
     fig1 = go.Figure(data=[
         go.Bar(x=df_sentiment['brand'], y=df_sentiment['avg_sentiment'], marker_color=colors)
     ])
     fig1.update_layout(title="Avg Sentiment Score per Brand", xaxis_title="Brand", yaxis_title="Sentiment")
-    
+
     st.plotly_chart(fig1, width='stretch')
-    
+
     col_chart1, col_chart2 = st.columns(2)
-    
-    fig2 = px.bar(df_summary, x='brand', y='avg_price', title='Avg Price per Brand', 
+
+    fig2 = px.bar(df_summary, x='brand', y='avg_price', title='Avg Price per Brand',
                   color='brand', text='avg_price')
     fig2.update_traces(texttemplate='%{text:.2s}', textposition='outside')
     col_chart1.plotly_chart(fig2, width='stretch')
-    
-    fig3 = px.bar(df_summary, x='brand', y='avg_discount_pct', title='Avg Discount % per Brand', 
+
+    fig3 = px.bar(df_summary, x='brand', y='avg_discount_pct', title='Avg Discount % per Brand',
                   color='brand', text='avg_discount_pct')
     fig3.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     col_chart2.plotly_chart(fig3, width='stretch')
@@ -263,11 +351,11 @@ def render_insights(df_processed, df_summary):
 
 def render_matchmaker(df_processed, df_summary):
     st.title("🤖 AI Luggage Matchmaker")
-    st.markdown("Chat with our Gemini-powered assistant to find the perfect bag!")
-    
+    st.markdown("Chat with our Llama-powered assistant to find the perfect bag!")
+
     # Check if API Key exists
-    if not os.environ.get("GEMINI_API_KEY"):
-        st.error("Missing GEMINI_API_KEY in the environment. Please add it to your .env file to use this feature.")
+    if not os.environ.get("HF_TOKEN"):
+        st.error("Missing HF_TOKEN in the environment. Please add it to your .env file to use this feature.")
         return
 
     # Initialize chat history
@@ -281,42 +369,59 @@ def render_matchmaker(df_processed, df_summary):
 
     # Prepare catalog context
     catalog_context = df_summary.to_string(index=False)
-    
+
+    # Prepare specific product context
+    product_stats = df_processed.groupby(['brand', 'product_title']).agg(
+        avg_price=('price', 'mean'),
+        avg_rating=('rating', 'mean'),
+        avg_sentiment=('sentiment_score', 'mean'),
+        total_reviews=('review_count', 'first')
+    ).reset_index()
+    product_stats['avg_price'] = product_stats['avg_price'].round(2)
+    product_stats['avg_rating'] = product_stats['avg_rating'].round(2)
+    product_stats['avg_sentiment'] = product_stats['avg_sentiment'].round(3)
+    product_context = product_stats.to_string(index=False)
+
     # React to user input
     if prompt := st.chat_input("E.g., I want a cheap but high-quality cabin bag with reliable zippers"):
         # Display user message in chat message container
         st.chat_message("user").markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
+
         # Build prompt payload
         system_prompt = f"""
         You are an expert luggage shopping assistant. 
-        Here is the catalog of available luggage brands and their average stats (including price, sentiment score, and top pros/cons):
+        Here is the catalog of available luggage BRANDS and their average stats (including top pros/cons):
         {catalog_context}
+        
+        Here are the specific bag MODELS available for each brand, with their individual price, rating, and sentiment:
+        {product_context}
         
         The user asks: {prompt}
         
-        Recommend the absolute best brand(s) for them. Use formatting (bullet points, bold text) to be highly readable.
-        Mention their exact price and why the pros matches the user's request. Keep it short, confident, and helpful.
+        Recommend the absolute best specific bag model(s) for them. Use formatting (bullet points, bold text) to be highly readable.
+        Mention the EXACT product name, exact price, and why the brand's pros matches the user's request. Keep it short, confident, and helpful.
         """
 
-        # Get response from Gemini
+        # Get response from HuggingFace
         with st.chat_message("assistant"):
             try:
-                if gemini_client:
-                    response = gemini_client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=system_prompt
+                if hf_client:
+                    response = hf_client.chat.completions.create(
+                        model=HF_MODEL,
+                        messages=[{"role": "user", "content": system_prompt}],
+                        max_tokens=500,
+                        temperature=0.5
                     )
-                    full_raw_response = response.text
+                    full_raw_response = response.choices[0].message.content
                     st.markdown(full_raw_response)
                     # Add assistant response to chat history
                     st.session_state.messages.append({"role": "assistant", "content": full_raw_response})
                 else:
-                    st.error("Gemini client is not initialized.")
+                    st.error("HuggingFace client is not initialized.")
             except Exception as e:
-                st.error(f"Error querying Gemini: {e}")
+                st.error(f"Error querying HuggingFace API: {e}")
 
 if __name__ == "__main__":
     main()
