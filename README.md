@@ -1,50 +1,30 @@
-# Luggage Sentiments: Amazon Review Analysis Dashboard
+Luggage Sentiment Intelligence
+A end-to-end data pipeline that scrapes Amazon India luggage reviews, runs sentiment analysis, extracts AI-powered themes, and serves everything through an interactive Streamlit dashboard — so you can actually understand what customers feel about luggage brands, not just what they rate them.
 
-A comprehensive dashboard for analyzing customer sentiment on luggage brands sold on Amazon India. This tool scrapes review data, performs NLP sentiment analysis, and presents actionable insights via an interactive Streamlit UI.
 
-## Methodology
+How It Works
+The project runs in 3 phases, each building on the last.
+Phase 1 — Scraping (scraper.py)
+Playwright automates a real Chromium browser, logs into Amazon India using your saved cookies, and crawls through each brand's search results. For every brand it grabs up to 10 products, and for every product it scrapes up to 60 reviews — saving each row to CSV instantly so nothing is lost if it crashes midway.
+Phase 2 — Processing (analyze.py)
+Takes the raw CSV and runs two things. First, VADER sentiment analysis scores every single review from -1 to +1. Then it samples those reviews and sends them to Llama 3.3 70B via HuggingFace, which reads them and returns exactly 3 pros and 3 cons per brand in structured JSON. Finally everything gets rolled up into a clean brand summary CSV.
+Phase 3 — Dashboard (app.py)
+A Streamlit app with 5 pages, a brand comparison tool, a product drilldown with color-coded reviews, auto-generated insights (like which brand has inflated ratings or ineffective discounts), and an AI Matchmaker chatbot where you describe what you need and Llama recommends a specific product from the actual catalog.
 
-- **Sentiment Scoring**: Uses **VADER** (Valence Aware Dictionary and sEntiment Reasoner) to assign a quantitative sentiment score (-1 to +1) to every review. VADER is particularly effective for social media and review text as it handles emojis, intensifiers, and nuanced phrasing without requiring heavy machine learning models.
-- **Theme Extraction**: Utilizes **HuggingFace** and the `Llama-3.3-70B-Instruct` model to intelligently read through reviews and extract specific, non-contradictory top Pros & Cons for each luggage brand.
-- **AI Matchmaker**: Features an intelligent Chatbot (powered by Llama 70B) in the dashboard that takes user preferences (e.g., "I need a cheap cabin bag with good wheels") and recommends specific luggage models, factoring in real-world prices and sentiment data.
 
-## Dataset Description
+Structure -> 
 
-The analysis covers 6 major luggage brands:
-* Safari
-* Skybags
-* American Tourister
-* VIP
-* Aristocrat
-* Nasher Miles
-
-**Core Columns Context:**
-- `brand`: The brand of the luggage.
-- `product_title`: Full product listing name.
-- `price` / `mrp` / `discount_pct`: Pricing metrics for value analysis.
-- `rating` / `review_count`: Overall product consensus metrics.
-- `reviewer_name` / `reviewer_rating`: Individual user consensus metrics.
-- `review_text`: The textual review analyzed by VADER.
-- `sentiment_score`: The VADER compound sentiment score mapping text to a -1 to +1 polarity.
-
-## Known Limitations
-
-- **Scraping Constraints**: Reviews are scraped exclusively from the primary product page. Pagination into the dedicated "All Reviews" section is restricted due to Amazon's aggressive anti-bot protections and CAPTCHA walls.
-
-## Getting Started
-
-### Installation
-
-Install the required Python dependencies listed in the requirements file:
-```bash
-pip install -r requirements.txt
-```
-
-*(Note: Ensure you have run Phase 1 (scraper) and Phase 3 (`analyze.py`) before launching the dashboard so that the `data/processed_data.csv` is populated).*
-
-### Running the Dashboard
-
-To launch the interactive Streamlit dashboard:
-```bash
-streamlit run app.py
-```
+munshot
+├── data/
+│   ├── raw_data.csv
+│   ├── processed_data.csv
+│   └── brand_summary.csv
+├── .env
+├── .gitignore
+├── analyze.py
+├── app.py
+├── cookies.json
+├── link.txt
+├── README.md
+├── requirements.txt
+└── scraper.py
